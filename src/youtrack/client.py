@@ -7,6 +7,10 @@ import requests
 from pathlib import Path
 from typing import Optional
 
+class YouTrackError(Exception):
+    """Custom exception for YouTrack API errors with meaningful messages."""
+    pass
+
 class YouTrackClient:
     def __init__(self, token: str, base_url: str):
         self.token = token
@@ -30,6 +34,18 @@ class YouTrackClient:
             "Content-Type": "application/json"
         }
 
+    def _handle_response(self, response):
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            try:
+                error = response.json()
+                message = error.get('error_description') or error.get('message') or str(error)
+            except Exception:
+                message = response.text
+            raise YouTrackError(f"YouTrack API error: {message}") from e
+        return response.json()
+
     def create_issue(self, project_id: str, summary: str, description: str = "", custom_fields: dict = None):
         """
         Create a new issue in the specified project.
@@ -43,8 +59,7 @@ class YouTrackClient:
         if custom_fields:
             data["customFields"] = custom_fields
         response = requests.post(url, json=data, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def list_issues(self, project_id: str, query: str = "", limit: int = 20, skip: int = 0):
         """
@@ -52,8 +67,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query=project:{project_id} {query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def update_issue(self, issue_id: str, summary: str = None, description: str = None, custom_fields: dict = None):
         """
@@ -68,8 +82,7 @@ class YouTrackClient:
         if custom_fields:
             data["customFields"] = custom_fields
         response = requests.post(url, json=data, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def search_issues(self, query: str, limit: int = 20, skip: int = 0):
         """
@@ -77,8 +90,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def add_comment(self, issue_id: str, text: str):
         """
@@ -87,8 +99,7 @@ class YouTrackClient:
         url = f"{self.base_url}/api/issues/{issue_id}/comments?fields=id,text,author"
         data = {"text": text}
         response = requests.post(url, json=data, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def transition_issue(self, issue_id: str, field_name: str, new_state: str):
         """
@@ -97,8 +108,7 @@ class YouTrackClient:
         url = f"{self.base_url}/api/issues/{issue_id}/fields/{field_name}"
         data = {"name": field_name, "value": {"name": new_state}}
         response = requests.post(url, json=data, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def attach_file(self, issue_id: str, file_path: str):
         """
@@ -109,8 +119,7 @@ class YouTrackClient:
             files = {"file": (file_path, f)}
             headers = {"Authorization": f"Bearer {self.token}"}
             response = requests.post(url, files=files, headers=headers)
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def get_issue_history(self, issue_id: str):
         """
@@ -118,8 +127,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues/{issue_id}/activities?fields=id,timestamp,author,added,removed"
         response = requests.get(url, headers=self._headers())
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response)
 
     def authenticate(self):
         """
