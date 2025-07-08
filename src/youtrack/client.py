@@ -233,12 +233,14 @@ class YouTrackClient:
         """
         List workitems (time tracking entries) in a project, with pagination support.
 
-        Args:
-            project_id (str): The ID of the project.
-            limit (int, optional): Max results to return.
-            skip (int, optional): Results to skip.
-        Returns:
-            list: List of workitems.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :param limit: Max results to return.
+        :type limit: int, optional
+        :param skip: Results to skip.
+        :type skip: int, optional
+        :return: List of workitems.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,workItems(id,duration,author,date,description)&query=project:{project_id}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -248,10 +250,10 @@ class YouTrackClient:
         """
         Calculate total time spent on an issue by summing its workitems' durations.
 
-        Args:
-            issue_id (str): The ID of the issue.
-        Returns:
-            int: Total time spent (minutes).
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :return: Total time spent (minutes).
+        :rtype: int
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=duration"
         response = requests.get(url, headers=self._headers())
@@ -263,10 +265,10 @@ class YouTrackClient:
         """
         List allowed workitem types for a project.
 
-        Args:
-            project_id (str): The ID of the project.
-        Returns:
-            list: List of workitem types.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :return: List of workitem types.
+        :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/timetrackingsettings/workitemtypes?fields=id,name,localizedName"
         response = requests.get(url, headers=self._headers())
@@ -276,13 +278,16 @@ class YouTrackClient:
         """
         Add spent time (workitem) to an issue. Duration is in minutes. workitem_type_id is required.
 
-        Args:
-            issue_id (str): The ID of the issue.
-            duration (int): Time spent in minutes.
-            workitem_type_id (str): The workitem type ID.
-            description (str, optional): Description for the workitem.
-        Returns:
-            dict: The created workitem data.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param duration: Time spent in minutes.
+        :type duration: int
+        :param workitem_type_id: The workitem type ID.
+        :type workitem_type_id: str
+        :param description: Description for the workitem.
+        :type description: str, optional
+        :return: The created workitem data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=id,duration,description,type(id,name)"
         data = {"duration": duration, "description": description, "type": {"id": workitem_type_id}}
