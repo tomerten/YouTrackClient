@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+*.log
+*.sqlite3
+*.db
+*.env
+.env*
+.venv/
+venv/
+
+# Poetry
+poetry.lock
+
+# Sphinx/Documentation builds
+docs/build/
+
+# TOML files
+*.toml
+
+# VSCode
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+htmlcov/
+.coverage
+.cache/
+
+# Misc
+*.bak
+*.swp
+*~
