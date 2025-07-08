@@ -184,12 +184,14 @@ class YouTrackClient:
         """
         Transition an issue to a new workflow state by updating a custom field (e.g., State).
 
-        Args:
-            issue_id (str): The ID of the issue.
-            field_name (str): The custom field name (e.g., 'State').
-            new_state (str): The new state value.
-        Returns:
-            dict: The updated issue data.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param field_name: The custom field name (e.g., 'State').
+        :type field_name: str
+        :param new_state: The new state value.
+        :type new_state: str
+        :return: The updated issue data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}/fields/{field_name}"
         data = {"name": field_name, "value": {"name": new_state}}
@@ -200,11 +202,12 @@ class YouTrackClient:
         """
         Attach a file to an issue.
 
-        Args:
-            issue_id (str): The ID of the issue.
-            file_path (str): Path to the file to attach.
-        Returns:
-            dict: The attachment data.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param file_path: Path to the file to attach.
+        :type file_path: str
+        :return: The attachment data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}/attachments?fields=id,name"
         with open(file_path, "rb") as f:
@@ -217,10 +220,10 @@ class YouTrackClient:
         """
         Retrieve the history and changes of an issue.
 
-        Args:
-            issue_id (str): The ID of the issue.
-        Returns:
-            list: List of activity records.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :return: List of activity records.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/activities?fields=id,timestamp,author,added,removed"
         response = requests.get(url, headers=self._headers())
