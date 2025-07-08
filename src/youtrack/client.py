@@ -164,6 +164,22 @@ class YouTrackClient:
         response = requests.post(url, json=data, headers=self._headers())
         return self._handle_response(response)
 
+    def list_projects(self):
+        """
+        List all projects and their IDs.
+        """
+        url = f"{self.base_url}/api/admin/projects?fields=id,name,shortName"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def get_issue(self, issue_id: str):
+        """
+        Get details for a specific issue by ID.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description,project(id,name)"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
