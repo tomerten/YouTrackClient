@@ -460,10 +460,10 @@ class YouTrackClient:
         """
         Run a report by its ID and return the result.
 
-        Args:
-            report_id (str): The ID of the report to execute.
-        Returns:
-            dict: The report execution result.
+        :param report_id: The ID of the report to execute.
+        :type report_id: str
+        :return: The report execution result.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/reports/{report_id}/execute"
         response = requests.post(url, headers=self._headers())
@@ -479,8 +479,8 @@ class YouTrackClient:
         """
         Retrieve all deadline calendars (holiday calendars) in the instance.
 
-        Returns:
-            list: List of calendars with id, name, and holidays.
+        :return: List of calendars with id, name, and holidays.
+        :rtype: list
         """
         url = f"{self.base_url}/api/admin/calendars?fields=id,name,holidays"
         response = requests.get(url, headers=self._headers())
@@ -490,10 +490,10 @@ class YouTrackClient:
         """
         Get all links for a specific issue.
 
-        Args:
-            issue_id (str): The ID of the issue.
-        Returns:
-            list: List of issue links with id, direction, link type, and linked issues.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :return: List of issue links with id, direction, link type, and linked issues.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links?fields=id,direction,linkType(id,name,directed),issues(id,summary)"
         response = requests.get(url, headers=self._headers())
@@ -503,8 +503,8 @@ class YouTrackClient:
         """
         List all available issue link types in the instance.
 
-        Returns:
-            list: List of link types with id, name, and direction info.
+        :return: List of link types with id, name, and direction info.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issueLinkTypes?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -514,10 +514,10 @@ class YouTrackClient:
         """
         List link types available for a specific issue.
 
-        Args:
-            issue_id (str): The ID of the issue.
-        Returns:
-            list: List of link types for the issue.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :return: List of link types for the issue.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links/types?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -527,10 +527,10 @@ class YouTrackClient:
         """
         List link types available for a specific project.
 
-        Args:
-            project_id (str): The ID of the project.
-        Returns:
-            list: List of link types for the project.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :return: List of link types for the project.
+        :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/issueLinkTypes?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -540,12 +540,14 @@ class YouTrackClient:
         """
         Add a link between two issues using a specific link type.
 
-        Args:
-            source_issue_id (str): The ID of the source issue.
-            target_issue_id (str): The ID of the target issue.
-            link_type_id (str): The ID of the link type to use.
-        Returns:
-            dict: The response from the API (usually the updated link info).
+        :param source_issue_id: The ID of the source issue.
+        :type source_issue_id: str
+        :param target_issue_id: The ID of the target issue.
+        :type target_issue_id: str
+        :param link_type_id: The ID of the link type to use.
+        :type link_type_id: str
+        :return: The response from the API (usually the updated link info).
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{source_issue_id}/links/{link_type_id}/{target_issue_id}"
         response = requests.put(url, headers=self._headers())
