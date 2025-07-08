@@ -363,10 +363,10 @@ class YouTrackClient:
         """
         List all agile boards. Optionally filter boards by project ID.
 
-        Args:
-            project_id (str, optional): If provided, only boards containing this project are returned.
-        Returns:
-            list: List of boards with id, name, and associated projects.
+        :param project_id: If provided, only boards containing this project are returned.
+        :type project_id: str, optional
+        :return: List of boards with id, name, and associated projects.
+        :rtype: list
         """
         url = f"{self.base_url}/api/agiles?fields=id,name,projects(id,name)"
         response = requests.get(url, headers=self._headers())
@@ -379,10 +379,10 @@ class YouTrackClient:
         """
         List all sprints for a given agile board.
 
-        Args:
-            board_id (str): The ID of the agile board.
-        Returns:
-            list: List of sprints with id, name, start, finish, and isArchived status.
+        :param board_id: The ID of the agile board.
+        :type board_id: str
+        :return: List of sprints with id, name, start, finish, and isArchived status.
+        :rtype: list
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints?fields=id,name,start,finish,isArchived"
         response = requests.get(url, headers=self._headers())
@@ -392,11 +392,12 @@ class YouTrackClient:
         """
         List user stories (epics) on a board, optionally for a specific sprint.
 
-        Args:
-            board_id (str): The ID of the agile board.
-            sprint_id (str, optional): The ID of the sprint. If provided, only user stories in this sprint are listed.
-        Returns:
-            list: List of user stories with id, summary, and custom fields.
+        :param board_id: The ID of the agile board.
+        :type board_id: str
+        :param sprint_id: The ID of the sprint. If provided, only user stories in this sprint are listed.
+        :type sprint_id: str, optional
+        :return: List of user stories with id, summary, and custom fields.
+        :rtype: list
         """
         url = f"{self.base_url}/api/agiles/{board_id}/issues?fields=id,summary,customFields(id,name,value(name))"
         if sprint_id:
@@ -408,12 +409,14 @@ class YouTrackClient:
         """
         Add an issue to a sprint on a specific agile board.
 
-        Args:
-            board_id (str): The ID of the agile board.
-            sprint_id (str): The ID of the sprint.
-            issue_id (str): The ID of the issue to add.
-        Returns:
-            dict: The response from the API (usually the updated sprint or issue info).
+        :param board_id: The ID of the agile board.
+        :type board_id: str
+        :param sprint_id: The ID of the sprint.
+        :type sprint_id: str
+        :param issue_id: The ID of the issue to add.
+        :type issue_id: str
+        :return: The response from the API (usually the updated sprint or issue info).
+        :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{issue_id}"
         response = requests.put(url, headers=self._headers())
@@ -423,12 +426,14 @@ class YouTrackClient:
         """
         Add an issue as a subtask to a user story (epic) on a board.
 
-        Args:
-            board_id (str): The ID of the agile board.
-            user_story_id (str): The ID of the user story (epic).
-            issue_id (str): The ID of the issue to add as a subtask.
-        Returns:
-            dict: The response from the API (usually the updated user story or issue info).
+        :param board_id: The ID of the agile board.
+        :type board_id: str
+        :param user_story_id: The ID of the user story (epic).
+        :type user_story_id: str
+        :param issue_id: The ID of the issue to add as a subtask.
+        :type issue_id: str
+        :return: The response from the API (usually the updated user story or issue info).
+        :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/issues/{user_story_id}/subtasks/{issue_id}"
         response = requests.put(url, headers=self._headers())
@@ -438,12 +443,14 @@ class YouTrackClient:
         """
         Add a user story (epic) to a sprint on a board.
 
-        Args:
-            board_id (str): The ID of the agile board.
-            sprint_id (str): The ID of the sprint.
-            user_story_id (str): The ID of the user story (epic) to add.
-        Returns:
-            dict: The response from the API (usually the updated sprint or user story info).
+        :param board_id: The ID of the agile board.
+        :type board_id: str
+        :param sprint_id: The ID of the sprint.
+        :type sprint_id: str
+        :param user_story_id: The ID of the user story (epic) to add.
+        :type user_story_id: str
+        :return: The response from the API (usually the updated sprint or user story info).
+        :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{user_story_id}"
         response = requests.put(url, headers=self._headers())
