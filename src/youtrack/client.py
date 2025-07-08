@@ -1,5 +1,26 @@
 """
 YouTrack API client implementation.
+
+This module provides the YouTrackClient class for interacting with the YouTrack REST API.
+
+Features:
+- Authenticate with YouTrack using a personal access token
+- Create, update, search, and list issues
+- Add comments, transition issues, and attach files
+- Retrieve issue history and changes
+- List and manage workitems (time tracking)
+- Find IDs for projects, issues, users, custom fields, workflows, boards, user stories, and more
+- Manage agile boards, sprints, and user stories (epics)
+- Run reports and retrieve deadline calendars
+- Manage issue links and link types
+- Run queries and commands on issues
+
+Usage:
+    from youtrack.client import YouTrackClient
+    client = YouTrackClient.from_config()
+    issues = client.list_issues(project_id="0-0")
+
+See each method's docstring for details.
 """
 
 import toml
@@ -46,9 +67,18 @@ class YouTrackClient:
             raise YouTrackError(f"YouTrack API error: {message}") from e
         return response.json()
 
-    def create_issue(self, project_id: str, summary: str, description: str = "", custom_fields: dict = None):
+    def create_issue(self, project_id: str, summary: str, description: str = "", custom_fields: dict = None, story_points: int = None):
         """
         Create a new issue in the specified project.
+
+        Args:
+            project_id (str): The ID of the project.
+            summary (str): The issue summary/title.
+            description (str, optional): The issue description.
+            custom_fields (dict, optional): Custom fields to set.
+            story_points (int, optional): Value for the 'Story points' custom field. Required in some workflows.
+        Returns:
+            dict: The created issue data.
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description"
         data = {
@@ -56,14 +86,29 @@ class YouTrackClient:
             "summary": summary,
             "description": description
         }
+        # Always include 'Story points' if provided
+        custom_fields = custom_fields.copy() if custom_fields else {}
+        if story_points is not None:
+            custom_fields["Story points"] = {"name": str(story_points), "value": story_points}
         if custom_fields:
-            data["customFields"] = custom_fields
+            data["customFields"] = [
+                {"name": k, **(v if isinstance(v, dict) else {"value": v})}
+                for k, v in custom_fields.items()
+            ]
         response = requests.post(url, json=data, headers=self._headers())
         return self._handle_response(response)
 
     def list_issues(self, project_id: str, query: str = "", limit: int = 20, skip: int = 0):
         """
-        List issues in a project with optional query, pagination supported.
+        List issues in a project with optional query and pagination.
+
+        Args:
+            project_id (str): The ID of the project.
+            query (str, optional): YouTrack query string.
+            limit (int, optional): Max results to return.
+            skip (int, optional): Results to skip.
+        Returns:
+            list: List of issues.
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query=project:{project_id} {query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -72,6 +117,14 @@ class YouTrackClient:
     def update_issue(self, issue_id: str, summary: str = None, description: str = None, custom_fields: dict = None):
         """
         Update an existing issue with new information.
+
+        Args:
+            issue_id (str): The ID of the issue.
+            summary (str, optional): New summary.
+            description (str, optional): New description.
+            custom_fields (dict, optional): Custom fields to update.
+        Returns:
+            dict: The updated issue data.
         """
         url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description"
         data = {}
@@ -87,6 +140,13 @@ class YouTrackClient:
     def search_issues(self, query: str, limit: int = 20, skip: int = 0):
         """
         Search for issues using a YouTrack query.
+
+        Args:
+            query (str): YouTrack query string.
+            limit (int, optional): Max results to return.
+            skip (int, optional): Results to skip.
+        Returns:
+            list: List of issues.
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -95,6 +155,12 @@ class YouTrackClient:
     def add_comment(self, issue_id: str, text: str):
         """
         Add a comment to an issue.
+
+        Args:
+            issue_id (str): The ID of the issue.
+            text (str): The comment text.
+        Returns:
+            dict: The created comment data.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/comments?fields=id,text,author"
         data = {"text": text}
@@ -104,6 +170,13 @@ class YouTrackClient:
     def transition_issue(self, issue_id: str, field_name: str, new_state: str):
         """
         Transition an issue to a new workflow state by updating a custom field (e.g., State).
+
+        Args:
+            issue_id (str): The ID of the issue.
+            field_name (str): The custom field name (e.g., 'State').
+            new_state (str): The new state value.
+        Returns:
+            dict: The updated issue data.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/fields/{field_name}"
         data = {"name": field_name, "value": {"name": new_state}}
@@ -113,6 +186,12 @@ class YouTrackClient:
     def attach_file(self, issue_id: str, file_path: str):
         """
         Attach a file to an issue.
+
+        Args:
+            issue_id (str): The ID of the issue.
+            file_path (str): Path to the file to attach.
+        Returns:
+            dict: The attachment data.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/attachments?fields=id,name"
         with open(file_path, "rb") as f:
@@ -124,6 +203,11 @@ class YouTrackClient:
     def get_issue_history(self, issue_id: str):
         """
         Retrieve the history and changes of an issue.
+
+        Args:
+            issue_id (str): The ID of the issue.
+        Returns:
+            list: List of activity records.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/activities?fields=id,timestamp,author,added,removed"
         response = requests.get(url, headers=self._headers())
@@ -132,6 +216,13 @@ class YouTrackClient:
     def list_workitems(self, project_id: str, limit: int = 20, skip: int = 0):
         """
         List workitems (time tracking entries) in a project, with pagination support.
+
+        Args:
+            project_id (str): The ID of the project.
+            limit (int, optional): Max results to return.
+            skip (int, optional): Results to skip.
+        Returns:
+            list: List of workitems.
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,workItems(id,duration,author,date,description)&query=project:{project_id}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -140,6 +231,11 @@ class YouTrackClient:
     def calculate_time_spent(self, issue_id: str):
         """
         Calculate total time spent on an issue by summing its workitems' durations.
+
+        Args:
+            issue_id (str): The ID of the issue.
+        Returns:
+            int: Total time spent (minutes).
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=duration"
         response = requests.get(url, headers=self._headers())
@@ -150,6 +246,11 @@ class YouTrackClient:
     def list_workitem_types(self, project_id: str):
         """
         List allowed workitem types for a project.
+
+        Args:
+            project_id (str): The ID of the project.
+        Returns:
+            list: List of workitem types.
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/timetrackingsettings/workitemtypes?fields=id,name,localizedName"
         response = requests.get(url, headers=self._headers())
@@ -158,6 +259,14 @@ class YouTrackClient:
     def add_spent_time(self, issue_id: str, duration: int, workitem_type_id: str, description: str = ""):
         """
         Add spent time (workitem) to an issue. Duration is in minutes. workitem_type_id is required.
+
+        Args:
+            issue_id (str): The ID of the issue.
+            duration (int): Time spent in minutes.
+            workitem_type_id (str): The workitem type ID.
+            description (str, optional): Description for the workitem.
+        Returns:
+            dict: The created workitem data.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=id,duration,description,type(id,name)"
         data = {"duration": duration, "description": description, "type": {"id": workitem_type_id}}
@@ -166,7 +275,10 @@ class YouTrackClient:
 
     def list_projects(self):
         """
-        List all projects and their IDs.
+        List all projects in the YouTrack instance.
+
+        Returns:
+            list: List of projects, each as a dict with 'id', 'name', and 'shortName'.
         """
         url = f"{self.base_url}/api/admin/projects?fields=id,name,shortName"
         response = requests.get(url, headers=self._headers())
@@ -174,7 +286,12 @@ class YouTrackClient:
 
     def get_issue(self, issue_id: str):
         """
-        Get details for a specific issue by ID.
+        Retrieve details for a specific issue by its ID.
+
+        Args:
+            issue_id (str): The ID of the issue.
+        Returns:
+            dict: Issue details including id, summary, description, and project info.
         """
         url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description,project(id,name)"
         response = requests.get(url, headers=self._headers())
@@ -182,7 +299,14 @@ class YouTrackClient:
 
     def list_users(self, query: str = "", limit: int = 20, skip: int = 0):
         """
-        List users and their IDs. Optionally filter by query string.
+        List users in the YouTrack instance, optionally filtered by a query string.
+
+        Args:
+            query (str, optional): Query string to filter users (e.g., by name or email).
+            limit (int, optional): Maximum number of users to return.
+            skip (int, optional): Number of users to skip (for pagination).
+        Returns:
+            list: List of user dicts with id, login, name, and email.
         """
         url = f"{self.base_url}/api/users?fields=id,login,name,email&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -190,7 +314,12 @@ class YouTrackClient:
 
     def list_custom_fields(self, project_id: str):
         """
-        List custom fields for a project and their IDs.
+        List custom fields for a given project.
+
+        Args:
+            project_id (str): The ID of the project.
+        Returns:
+            list: List of custom fields with id, name, and field type info.
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/customfields?fields=id,name,fieldType(id,valueType)"
         response = requests.get(url, headers=self._headers())
@@ -198,7 +327,10 @@ class YouTrackClient:
 
     def list_workflows(self):
         """
-        List all workflows and their IDs.
+        List all workflows in the YouTrack instance.
+
+        Returns:
+            list: List of workflows with id, name, and description.
         """
         url = f"{self.base_url}/api/workflows?fields=id,name,description"
         response = requests.get(url, headers=self._headers())
@@ -206,7 +338,12 @@ class YouTrackClient:
 
     def list_boards(self, project_id: str = None):
         """
-        List all agile boards and their IDs. Optionally filter by project.
+        List all agile boards. Optionally filter boards by project ID.
+
+        Args:
+            project_id (str, optional): If provided, only boards containing this project are returned.
+        Returns:
+            list: List of boards with id, name, and associated projects.
         """
         url = f"{self.base_url}/api/agiles?fields=id,name,projects(id,name)"
         response = requests.get(url, headers=self._headers())
@@ -217,7 +354,12 @@ class YouTrackClient:
 
     def list_sprints(self, board_id: str):
         """
-        List all sprints for a given agile board and their IDs.
+        List all sprints for a given agile board.
+
+        Args:
+            board_id (str): The ID of the agile board.
+        Returns:
+            list: List of sprints with id, name, start, finish, and isArchived status.
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints?fields=id,name,start,finish,isArchived"
         response = requests.get(url, headers=self._headers())
@@ -226,6 +368,12 @@ class YouTrackClient:
     def list_user_stories(self, board_id: str, sprint_id: str = None):
         """
         List user stories (epics) on a board, optionally for a specific sprint.
+
+        Args:
+            board_id (str): The ID of the agile board.
+            sprint_id (str, optional): The ID of the sprint. If provided, only user stories in this sprint are listed.
+        Returns:
+            list: List of user stories with id, summary, and custom fields.
         """
         url = f"{self.base_url}/api/agiles/{board_id}/issues?fields=id,summary,customFields(id,name,value(name))"
         if sprint_id:
@@ -235,7 +383,14 @@ class YouTrackClient:
 
     def add_issue_to_sprint(self, board_id: str, sprint_id: str, issue_id: str):
         """
-        Add an issue to a sprint on a board.
+        Add an issue to a sprint on a specific agile board.
+
+        Args:
+            board_id (str): The ID of the agile board.
+            sprint_id (str): The ID of the sprint.
+            issue_id (str): The ID of the issue to add.
+        Returns:
+            dict: The response from the API (usually the updated sprint or issue info).
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{issue_id}"
         response = requests.put(url, headers=self._headers())
@@ -243,7 +398,14 @@ class YouTrackClient:
 
     def add_issue_to_user_story(self, board_id: str, user_story_id: str, issue_id: str):
         """
-        Add an issue to a user story (epic) on a board.
+        Add an issue as a subtask to a user story (epic) on a board.
+
+        Args:
+            board_id (str): The ID of the agile board.
+            user_story_id (str): The ID of the user story (epic).
+            issue_id (str): The ID of the issue to add as a subtask.
+        Returns:
+            dict: The response from the API (usually the updated user story or issue info).
         """
         url = f"{self.base_url}/api/agiles/{board_id}/issues/{user_story_id}/subtasks/{issue_id}"
         response = requests.put(url, headers=self._headers())
@@ -252,6 +414,13 @@ class YouTrackClient:
     def add_user_story_to_sprint(self, board_id: str, sprint_id: str, user_story_id: str):
         """
         Add a user story (epic) to a sprint on a board.
+
+        Args:
+            board_id (str): The ID of the agile board.
+            sprint_id (str): The ID of the sprint.
+            user_story_id (str): The ID of the user story (epic) to add.
+        Returns:
+            dict: The response from the API (usually the updated sprint or user story info).
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{user_story_id}"
         response = requests.put(url, headers=self._headers())
@@ -260,6 +429,11 @@ class YouTrackClient:
     def run_report(self, report_id: str):
         """
         Run a report by its ID and return the result.
+
+        Args:
+            report_id (str): The ID of the report to execute.
+        Returns:
+            dict: The report execution result.
         """
         url = f"{self.base_url}/api/reports/{report_id}/execute"
         response = requests.post(url, headers=self._headers())
@@ -267,13 +441,16 @@ class YouTrackClient:
 
     def authenticate(self):
         """
-        Placeholder for authentication logic.
+        Placeholder for authentication logic. Not required for token-based auth.
         """
         pass
 
     def get_deadline_calendars(self):
         """
-        Get deadline calendars.
+        Retrieve all deadline calendars (holiday calendars) in the instance.
+
+        Returns:
+            list: List of calendars with id, name, and holidays.
         """
         url = f"{self.base_url}/api/admin/calendars?fields=id,name,holidays"
         response = requests.get(url, headers=self._headers())
@@ -282,6 +459,11 @@ class YouTrackClient:
     def get_issue_links(self, issue_id: str):
         """
         Get all links for a specific issue.
+
+        Args:
+            issue_id (str): The ID of the issue.
+        Returns:
+            list: List of issue links with id, direction, link type, and linked issues.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links?fields=id,direction,linkType(id,name,directed),issues(id,summary)"
         response = requests.get(url, headers=self._headers())
@@ -289,7 +471,10 @@ class YouTrackClient:
 
     def list_issue_link_types(self):
         """
-        List all issue link types.
+        List all available issue link types in the instance.
+
+        Returns:
+            list: List of link types with id, name, and direction info.
         """
         url = f"{self.base_url}/api/issueLinkTypes?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -297,7 +482,12 @@ class YouTrackClient:
 
     def list_issue_link_types_for_issue(self, issue_id: str):
         """
-        List link types for a specific issue.
+        List link types available for a specific issue.
+
+        Args:
+            issue_id (str): The ID of the issue.
+        Returns:
+            list: List of link types for the issue.
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links/types?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -305,7 +495,12 @@ class YouTrackClient:
 
     def list_issue_link_types_for_project(self, project_id: str):
         """
-        List link types for a specific project.
+        List link types available for a specific project.
+
+        Args:
+            project_id (str): The ID of the project.
+        Returns:
+            list: List of link types for the project.
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/issueLinkTypes?fields=id,name,directed"
         response = requests.get(url, headers=self._headers())
@@ -313,7 +508,14 @@ class YouTrackClient:
 
     def add_issue_link(self, source_issue_id: str, target_issue_id: str, link_type_id: str):
         """
-        Add a link between two issues.
+        Add a link between two issues using a specific link type.
+
+        Args:
+            source_issue_id (str): The ID of the source issue.
+            target_issue_id (str): The ID of the target issue.
+            link_type_id (str): The ID of the link type to use.
+        Returns:
+            dict: The response from the API (usually the updated link info).
         """
         url = f"{self.base_url}/api/issues/{source_issue_id}/links/{link_type_id}/{target_issue_id}"
         response = requests.put(url, headers=self._headers())
@@ -321,7 +523,15 @@ class YouTrackClient:
 
     def run_query(self, query: str, fields: str = "id,summary,description", limit: int = 20, skip: int = 0):
         """
-        Run a search query on issues.
+        Run a search query on issues, returning selected fields.
+
+        Args:
+            query (str): YouTrack query string.
+            fields (str, optional): Comma-separated fields to return for each issue.
+            limit (int, optional): Max results to return.
+            skip (int, optional): Results to skip.
+        Returns:
+            list: List of issues matching the query.
         """
         url = f"{self.base_url}/api/issues?fields={fields}&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -329,7 +539,14 @@ class YouTrackClient:
 
     def run_command(self, issue_id: str, command: str, comment: str = None):
         """
-        Run a command on an issue (e.g., change state, assign, etc.).
+        Run a command on an issue (e.g., change state, assign, add comment, etc.).
+
+        Args:
+            issue_id (str): The ID of the issue.
+            command (str): The command string to execute (YouTrack command language).
+            comment (str, optional): Optional comment to add with the command.
+        Returns:
+            dict: The response from the API (usually the updated issue info).
         """
         url = f"{self.base_url}/api/issues/{issue_id}/execute"
         data = {"query": command}
