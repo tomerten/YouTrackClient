@@ -215,6 +215,24 @@ class YouTrackClient:
             boards = [b for b in boards if any(p['id'] == project_id for p in b.get('projects', []))]
         return boards
 
+    def list_sprints(self, board_id: str):
+        """
+        List all sprints for a given agile board and their IDs.
+        """
+        url = f"{self.base_url}/api/agiles/{board_id}/sprints?fields=id,name,start,finish,isArchived"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def list_user_stories(self, board_id: str, sprint_id: str = None):
+        """
+        List user stories (epics) on a board, optionally for a specific sprint.
+        """
+        url = f"{self.base_url}/api/agiles/{board_id}/issues?fields=id,summary,customFields(id,name,value(name))"
+        if sprint_id:
+            url += f"&sprint={sprint_id}"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
