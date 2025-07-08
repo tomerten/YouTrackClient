@@ -249,6 +249,14 @@ class YouTrackClient:
         response = requests.put(url, headers=self._headers())
         return self._handle_response(response)
 
+    def add_user_story_to_sprint(self, board_id: str, sprint_id: str, user_story_id: str):
+        """
+        Add a user story (epic) to a sprint on a board.
+        """
+        url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{user_story_id}"
+        response = requests.put(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
