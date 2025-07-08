@@ -270,3 +270,11 @@ class YouTrackClient:
         Placeholder for authentication logic.
         """
         pass
+
+    def get_deadline_calendars(self):
+        """
+        Get deadline calendars.
+        """
+        url = f"{self.base_url}/api/admin/calendars?fields=id,name,holidays"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
