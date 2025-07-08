@@ -233,6 +233,22 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def add_issue_to_sprint(self, board_id: str, sprint_id: str, issue_id: str):
+        """
+        Add an issue to a sprint on a board.
+        """
+        url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{issue_id}"
+        response = requests.put(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def add_issue_to_user_story(self, board_id: str, user_story_id: str, issue_id: str):
+        """
+        Add an issue to a user story (epic) on a board.
+        """
+        url = f"{self.base_url}/api/agiles/{board_id}/issues/{user_story_id}/subtasks/{issue_id}"
+        response = requests.put(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
