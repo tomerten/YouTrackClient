@@ -196,6 +196,14 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def list_workflows(self):
+        """
+        List all workflows and their IDs.
+        """
+        url = f"{self.base_url}/api/workflows?fields=id,name,description"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
