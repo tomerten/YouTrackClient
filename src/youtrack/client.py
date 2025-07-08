@@ -188,6 +188,14 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def list_custom_fields(self, project_id: str):
+        """
+        List custom fields for a project and their IDs.
+        """
+        url = f"{self.base_url}/api/admin/projects/{project_id}/customfields?fields=id,name,fieldType(id,valueType)"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
