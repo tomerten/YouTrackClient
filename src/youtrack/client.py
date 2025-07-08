@@ -71,14 +71,18 @@ class YouTrackClient:
         """
         Create a new issue in the specified project.
 
-        Args:
-            project_id (str): The ID of the project.
-            summary (str): The issue summary/title.
-            description (str, optional): The issue description.
-            custom_fields (dict, optional): Custom fields to set.
-            story_points (int, optional): Value for the 'Story points' custom field. Required in some workflows.
-        Returns:
-            dict: The created issue data.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :param summary: The issue summary/title.
+        :type summary: str
+        :param description: The issue description.
+        :type description: str, optional
+        :param custom_fields: Custom fields to set.
+        :type custom_fields: dict, optional
+        :param story_points: Value for the 'Story points' custom field. Required in some workflows.
+        :type story_points: int, optional
+        :return: The created issue data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description"
         data = {
@@ -102,13 +106,16 @@ class YouTrackClient:
         """
         List issues in a project with optional query and pagination.
 
-        Args:
-            project_id (str): The ID of the project.
-            query (str, optional): YouTrack query string.
-            limit (int, optional): Max results to return.
-            skip (int, optional): Results to skip.
-        Returns:
-            list: List of issues.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :param query: YouTrack query string.
+        :type query: str, optional
+        :param limit: Max results to return.
+        :type limit: int, optional
+        :param skip: Results to skip.
+        :type skip: int, optional
+        :return: List of issues.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query=project:{project_id} {query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -118,13 +125,16 @@ class YouTrackClient:
         """
         Update an existing issue with new information.
 
-        Args:
-            issue_id (str): The ID of the issue.
-            summary (str, optional): New summary.
-            description (str, optional): New description.
-            custom_fields (dict, optional): Custom fields to update.
-        Returns:
-            dict: The updated issue data.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param summary: New summary.
+        :type summary: str, optional
+        :param description: New description.
+        :type description: str, optional
+        :param custom_fields: Custom fields to update.
+        :type custom_fields: dict, optional
+        :return: The updated issue data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description"
         data = {}
@@ -141,12 +151,14 @@ class YouTrackClient:
         """
         Search for issues using a YouTrack query.
 
-        Args:
-            query (str): YouTrack query string.
-            limit (int, optional): Max results to return.
-            skip (int, optional): Results to skip.
-        Returns:
-            list: List of issues.
+        :param query: YouTrack query string.
+        :type query: str
+        :param limit: Max results to return.
+        :type limit: int, optional
+        :param skip: Results to skip.
+        :type skip: int, optional
+        :return: List of issues.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -156,11 +168,12 @@ class YouTrackClient:
         """
         Add a comment to an issue.
 
-        Args:
-            issue_id (str): The ID of the issue.
-            text (str): The comment text.
-        Returns:
-            dict: The created comment data.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param text: The comment text.
+        :type text: str
+        :return: The created comment data.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}/comments?fields=id,text,author"
         data = {"text": text}
