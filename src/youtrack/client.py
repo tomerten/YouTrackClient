@@ -557,13 +557,16 @@ class YouTrackClient:
         """
         Run a search query on issues, returning selected fields.
 
-        Args:
-            query (str): YouTrack query string.
-            fields (str, optional): Comma-separated fields to return for each issue.
-            limit (int, optional): Max results to return.
-            skip (int, optional): Results to skip.
-        Returns:
-            list: List of issues matching the query.
+        :param query: YouTrack query string.
+        :type query: str
+        :param fields: Comma-separated fields to return for each issue.
+        :type fields: str, optional
+        :param limit: Max results to return.
+        :type limit: int, optional
+        :param skip: Results to skip.
+        :type skip: int, optional
+        :return: List of issues matching the query.
+        :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields={fields}&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -573,12 +576,14 @@ class YouTrackClient:
         """
         Run a command on an issue (e.g., change state, assign, add comment, etc.).
 
-        Args:
-            issue_id (str): The ID of the issue.
-            command (str): The command string to execute (YouTrack command language).
-            comment (str, optional): Optional comment to add with the command.
-        Returns:
-            dict: The response from the API (usually the updated issue info).
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :param command: The command string to execute (YouTrack command language).
+        :type command: str
+        :param comment: Optional comment to add with the command.
+        :type comment: str, optional
+        :return: The response from the API (usually the updated issue info).
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}/execute"
         data = {"query": command}
