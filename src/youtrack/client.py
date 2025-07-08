@@ -1,0 +1,119 @@
+"""
+YouTrack API client implementation.
+"""
+
+import toml
+import requests
+from pathlib import Path
+from typing import Optional
+
+class YouTrackClient:
+    def __init__(self, token: str, base_url: str):
+        self.token = token
+        self.base_url = base_url
+
+    @classmethod
+    def from_config(cls, config_path: Optional[str] = None):
+        """
+        Load YouTrack credentials from a .youtrack.toml file.
+        """
+        config_file = config_path or str(Path.home() / ".youtrack.toml")
+        config = toml.load(config_file)
+        token = config["youtrack"]["token"]
+        base_url = config["youtrack"]["base_url"]
+        return cls(token, base_url)
+
+    def _headers(self):
+        return {
+            "Authorization": f"Bearer {self.token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+
+    def create_issue(self, project_id: str, summary: str, description: str = "", custom_fields: dict = None):
+        """
+        Create a new issue in the specified project.
+        """
+        url = f"{self.base_url}/api/issues?fields=id,summary,description"
+        data = {
+            "project": {"id": project_id},
+            "summary": summary,
+            "description": description
+        }
+        if custom_fields:
+            data["customFields"] = custom_fields
+        response = requests.post(url, json=data, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def list_issues(self, project_id: str, query: str = "", limit: int = 20, skip: int = 0):
+        """
+        List issues in a project with optional query, pagination supported.
+        """
+        url = f"{self.base_url}/api/issues?fields=id,summary,description&query=project:{project_id} {query}&$skip={skip}&$top={limit}"
+        response = requests.get(url, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def update_issue(self, issue_id: str, summary: str = None, description: str = None, custom_fields: dict = None):
+        """
+        Update an existing issue with new information.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description"
+        data = {}
+        if summary is not None:
+            data["summary"] = summary
+        if description is not None:
+            data["description"] = description
+        if custom_fields:
+            data["customFields"] = custom_fields
+        response = requests.post(url, json=data, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def search_issues(self, query: str, limit: int = 20, skip: int = 0):
+        """
+        Search for issues using a YouTrack query.
+        """
+        url = f"{self.base_url}/api/issues?fields=id,summary,description&query={query}&$skip={skip}&$top={limit}"
+        response = requests.get(url, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def add_comment(self, issue_id: str, text: str):
+        """
+        Add a comment to an issue.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/comments?fields=id,text,author"
+        data = {"text": text}
+        response = requests.post(url, json=data, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def transition_issue(self, issue_id: str, field_name: str, new_state: str):
+        """
+        Transition an issue to a new workflow state by updating a custom field (e.g., State).
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/fields/{field_name}"
+        data = {"name": field_name, "value": {"name": new_state}}
+        response = requests.post(url, json=data, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
+    def attach_file(self, issue_id: str, file_path: str):
+        """
+        Attach a file to an issue.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/attachments?fields=id,name"
+        with open(file_path, "rb") as f:
+            files = {"file": (file_path, f)}
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.post(url, files=files, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+    def authenticate(self):
+        """
+        Placeholder for authentication logic.
+        """
+        pass
