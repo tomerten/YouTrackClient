@@ -257,6 +257,14 @@ class YouTrackClient:
         response = requests.put(url, headers=self._headers())
         return self._handle_response(response)
 
+    def run_report(self, report_id: str):
+        """
+        Run a report by its ID and return the result.
+        """
+        url = f"{self.base_url}/api/reports/{report_id}/execute"
+        response = requests.post(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
