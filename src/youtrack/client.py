@@ -129,6 +129,14 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def list_workitems(self, project_id: str, limit: int = 20, skip: int = 0):
+        """
+        List workitems (time tracking entries) in a project, with pagination support.
+        """
+        url = f"{self.base_url}/api/issues?fields=id,summary,workItems(id,duration,author,date,description)&query=project:{project_id}&$skip={skip}&$top={limit}"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
