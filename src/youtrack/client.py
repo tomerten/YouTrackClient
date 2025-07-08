@@ -112,6 +112,15 @@ class YouTrackClient:
         response.raise_for_status()
         return response.json()
 
+    def get_issue_history(self, issue_id: str):
+        """
+        Retrieve the history and changes of an issue.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/activities?fields=id,timestamp,author,added,removed"
+        response = requests.get(url, headers=self._headers())
+        response.raise_for_status()
+        return response.json()
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
