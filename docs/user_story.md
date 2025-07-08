@@ -1,0 +1,41 @@
+# Python YouTrack Package
+
+I want to use the Python YouTrack package to manage my YouTrack issues programmatically. The package should allow me to:
+
+- Authenticate with my YouTrack instance using a personal access token, stored in .youtrack.toml file
+- Create new issues with custom fields
+- Update existing issues with new information
+- Search for issues using various criteria
+- List all issues in a project
+- Add comments to issues
+- Transition issues through their workflow states
+- Attach files to issues
+- Retrieve issue history and changes
+- Handle errors gracefully and provide meaningful error messages
+- Support pagination for listing issues
+- List workitems in a project
+- Calculate time spent on issues
+- Add spent time to issues
+- find id's for:
+    - projects
+    - issues
+    - users
+    - custom fields
+    - workflows
+    - issue links
+    - workitem types
+    - boards
+    - user stories
+- add user stories to sprints on boards
+- list sprints on boards
+- add issues to sprints on boards
+- add issues to user stories on boards
+- run reports
+- get deadline calendars
+- get issue links
+- get issue link types
+- get issue link types for a specific issue
+- get issue link types for a specific project
+- add links
+- run queries on issues 
+- run commands on issues
