@@ -137,6 +137,33 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def calculate_time_spent(self, issue_id: str):
+        """
+        Calculate total time spent on an issue by summing its workitems' durations.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=duration"
+        response = requests.get(url, headers=self._headers())
+        workitems = self._handle_response(response)
+        total = sum(wi.get('duration', 0) for wi in workitems)
+        return total
+
+    def list_workitem_types(self, project_id: str):
+        """
+        List allowed workitem types for a project.
+        """
+        url = f"{self.base_url}/api/admin/projects/{project_id}/timetrackingsettings/workitemtypes?fields=id,name,localizedName"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def add_spent_time(self, issue_id: str, duration: int, workitem_type_id: str, description: str = ""):
+        """
+        Add spent time (workitem) to an issue. Duration is in minutes. workitem_type_id is required.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=id,duration,description,type(id,name)"
+        data = {"duration": duration, "description": description, "type": {"id": workitem_type_id}}
+        response = requests.post(url, json=data, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
