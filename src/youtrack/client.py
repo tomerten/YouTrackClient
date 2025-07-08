@@ -318,3 +318,22 @@ class YouTrackClient:
         url = f"{self.base_url}/api/issues/{source_issue_id}/links/{link_type_id}/{target_issue_id}"
         response = requests.put(url, headers=self._headers())
         return self._handle_response(response)
+
+    def run_query(self, query: str, fields: str = "id,summary,description", limit: int = 20, skip: int = 0):
+        """
+        Run a search query on issues.
+        """
+        url = f"{self.base_url}/api/issues?fields={fields}&query={query}&$skip={skip}&$top={limit}"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def run_command(self, issue_id: str, command: str, comment: str = None):
+        """
+        Run a command on an issue (e.g., change state, assign, etc.).
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/execute"
+        data = {"query": command}
+        if comment:
+            data["comment"] = {"text": comment}
+        response = requests.post(url, json=data, headers=self._headers())
+        return self._handle_response(response)
