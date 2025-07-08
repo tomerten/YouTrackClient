@@ -204,6 +204,17 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def list_boards(self, project_id: str = None):
+        """
+        List all agile boards and their IDs. Optionally filter by project.
+        """
+        url = f"{self.base_url}/api/agiles?fields=id,name,projects(id,name)"
+        response = requests.get(url, headers=self._headers())
+        boards = self._handle_response(response)
+        if project_id:
+            boards = [b for b in boards if any(p['id'] == project_id for p in b.get('projects', []))]
+        return boards
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
