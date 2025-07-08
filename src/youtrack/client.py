@@ -298,8 +298,8 @@ class YouTrackClient:
         """
         List all projects in the YouTrack instance.
 
-        Returns:
-            list: List of projects, each as a dict with 'id', 'name', and 'shortName'.
+        :return: List of projects, each as a dict with 'id', 'name', and 'shortName'.
+        :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects?fields=id,name,shortName"
         response = requests.get(url, headers=self._headers())
@@ -309,10 +309,10 @@ class YouTrackClient:
         """
         Retrieve details for a specific issue by its ID.
 
-        Args:
-            issue_id (str): The ID of the issue.
-        Returns:
-            dict: Issue details including id, summary, description, and project info.
+        :param issue_id: The ID of the issue.
+        :type issue_id: str
+        :return: Issue details including id, summary, description, and project info.
+        :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description,project(id,name)"
         response = requests.get(url, headers=self._headers())
@@ -322,12 +322,14 @@ class YouTrackClient:
         """
         List users in the YouTrack instance, optionally filtered by a query string.
 
-        Args:
-            query (str, optional): Query string to filter users (e.g., by name or email).
-            limit (int, optional): Maximum number of users to return.
-            skip (int, optional): Number of users to skip (for pagination).
-        Returns:
-            list: List of user dicts with id, login, name, and email.
+        :param query: Query string to filter users (e.g., by name or email).
+        :type query: str, optional
+        :param limit: Maximum number of users to return.
+        :type limit: int, optional
+        :param skip: Number of users to skip (for pagination).
+        :type skip: int, optional
+        :return: List of user dicts with id, login, name, and email.
+        :rtype: list
         """
         url = f"{self.base_url}/api/users?fields=id,login,name,email&query={query}&$skip={skip}&$top={limit}"
         response = requests.get(url, headers=self._headers())
@@ -337,10 +339,10 @@ class YouTrackClient:
         """
         List custom fields for a given project.
 
-        Args:
-            project_id (str): The ID of the project.
-        Returns:
-            list: List of custom fields with id, name, and field type info.
+        :param project_id: The ID of the project.
+        :type project_id: str
+        :return: List of custom fields with id, name, and field type info.
+        :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/customfields?fields=id,name,fieldType(id,valueType)"
         response = requests.get(url, headers=self._headers())
@@ -350,8 +352,8 @@ class YouTrackClient:
         """
         List all workflows in the YouTrack instance.
 
-        Returns:
-            list: List of workflows with id, name, and description.
+        :return: List of workflows with id, name, and description.
+        :rtype: list
         """
         url = f"{self.base_url}/api/workflows?fields=id,name,description"
         response = requests.get(url, headers=self._headers())
