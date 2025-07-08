@@ -180,6 +180,14 @@ class YouTrackClient:
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
 
+    def list_users(self, query: str = "", limit: int = 20, skip: int = 0):
+        """
+        List users and their IDs. Optionally filter by query string.
+        """
+        url = f"{self.base_url}/api/users?fields=id,login,name,email&query={query}&$skip={skip}&$top={limit}"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
     def authenticate(self):
         """
         Placeholder for authentication logic.
