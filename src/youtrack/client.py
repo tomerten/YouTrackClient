@@ -278,3 +278,43 @@ class YouTrackClient:
         url = f"{self.base_url}/api/admin/calendars?fields=id,name,holidays"
         response = requests.get(url, headers=self._headers())
         return self._handle_response(response)
+
+    def get_issue_links(self, issue_id: str):
+        """
+        Get all links for a specific issue.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/links?fields=id,direction,linkType(id,name,directed),issues(id,summary)"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def list_issue_link_types(self):
+        """
+        List all issue link types.
+        """
+        url = f"{self.base_url}/api/issueLinkTypes?fields=id,name,directed"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def list_issue_link_types_for_issue(self, issue_id: str):
+        """
+        List link types for a specific issue.
+        """
+        url = f"{self.base_url}/api/issues/{issue_id}/links/types?fields=id,name,directed"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def list_issue_link_types_for_project(self, project_id: str):
+        """
+        List link types for a specific project.
+        """
+        url = f"{self.base_url}/api/admin/projects/{project_id}/issueLinkTypes?fields=id,name,directed"
+        response = requests.get(url, headers=self._headers())
+        return self._handle_response(response)
+
+    def add_issue_link(self, source_issue_id: str, target_issue_id: str, link_type_id: str):
+        """
+        Add a link between two issues.
+        """
+        url = f"{self.base_url}/api/issues/{source_issue_id}/links/{link_type_id}/{target_issue_id}"
+        response = requests.put(url, headers=self._headers())
+        return self._handle_response(response)
