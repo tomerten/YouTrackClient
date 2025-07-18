@@ -99,7 +99,7 @@ class YouTrackClient:
                 {"name": k, **(v if isinstance(v, dict) else {"value": v})}
                 for k, v in custom_fields.items()
             ]
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_issues(self, project_id: str, query: str = "", limit: int = 20, skip: int = 0):
@@ -118,7 +118,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query=project:{project_id} {query}&$skip={skip}&$top={limit}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def update_issue(self, issue_id: str, summary: str = None, description: str = None, custom_fields: dict = None):
@@ -144,7 +144,7 @@ class YouTrackClient:
             data["description"] = description
         if custom_fields:
             data["customFields"] = custom_fields
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def search_issues(self, query: str, limit: int = 20, skip: int = 0):
@@ -161,7 +161,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,description&query={query}&$skip={skip}&$top={limit}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_comment(self, issue_id: str, text: str):
@@ -177,7 +177,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues/{issue_id}/comments?fields=id,text,author"
         data = {"text": text}
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def transition_issue(self, issue_id: str, field_name: str, new_state: str):
@@ -195,7 +195,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues/{issue_id}/fields/{field_name}"
         data = {"name": field_name, "value": {"name": new_state}}
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def attach_file(self, issue_id: str, file_path: str):
@@ -213,7 +213,7 @@ class YouTrackClient:
         with open(file_path, "rb") as f:
             files = {"file": (file_path, f)}
             headers = {"Authorization": f"Bearer {self.token}"}
-            response = requests.post(url, files=files, headers=headers)
+            response = requests.post(url, files=files, headers=headers, verify=False)
         return self._handle_response(response)
 
     def get_issue_history(self, issue_id: str):
@@ -226,7 +226,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/activities?fields=id,timestamp,author,added,removed"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_workitems(self, project_id: str, limit: int = 20, skip: int = 0):
@@ -243,7 +243,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields=id,summary,workItems(id,duration,author,date,description)&query=project:{project_id}&$skip={skip}&$top={limit}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def calculate_time_spent(self, issue_id: str):
@@ -256,7 +256,7 @@ class YouTrackClient:
         :rtype: int
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=duration"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         workitems = self._handle_response(response)
         total = sum(wi.get('duration', 0) for wi in workitems)
         return total
@@ -271,7 +271,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/timetrackingsettings/workitemtypes?fields=id,name,localizedName"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_spent_time(self, issue_id: str, duration: int, workitem_type_id: str, description: str = ""):
@@ -291,7 +291,7 @@ class YouTrackClient:
         """
         url = f"{self.base_url}/api/issues/{issue_id}/timeTracking/workItems?fields=id,duration,description,type(id,name)"
         data = {"duration": duration, "description": description, "type": {"id": workitem_type_id}}
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_projects(self):
@@ -302,7 +302,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects?fields=id,name,shortName"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def get_issue(self, issue_id: str):
@@ -315,7 +315,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{issue_id}?fields=id,summary,description,project(id,name)"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_users(self, query: str = "", limit: int = 20, skip: int = 0):
@@ -332,7 +332,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/users?fields=id,login,name,email&query={query}&$skip={skip}&$top={limit}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_custom_fields(self, project_id: str):
@@ -345,7 +345,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/customfields?fields=id,name,fieldType(id,valueType)"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_workflows(self):
@@ -356,7 +356,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/workflows?fields=id,name,description"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_boards(self, project_id: str = None):
@@ -369,7 +369,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/agiles?fields=id,name,projects(id,name)"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         boards = self._handle_response(response)
         if project_id:
             boards = [b for b in boards if any(p['id'] == project_id for p in b.get('projects', []))]
@@ -385,7 +385,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints?fields=id,name,start,finish,isArchived"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_user_stories(self, board_id: str, sprint_id: str = None):
@@ -402,7 +402,7 @@ class YouTrackClient:
         url = f"{self.base_url}/api/agiles/{board_id}/issues?fields=id,summary,customFields(id,name,value(name))"
         if sprint_id:
             url += f"&sprint={sprint_id}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_issue_to_sprint(self, board_id: str, sprint_id: str, issue_id: str):
@@ -419,7 +419,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{issue_id}"
-        response = requests.put(url, headers=self._headers())
+        response = requests.put(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_issue_to_user_story(self, board_id: str, user_story_id: str, issue_id: str):
@@ -436,7 +436,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/issues/{user_story_id}/subtasks/{issue_id}"
-        response = requests.put(url, headers=self._headers())
+        response = requests.put(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_user_story_to_sprint(self, board_id: str, sprint_id: str, user_story_id: str):
@@ -453,7 +453,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/agiles/{board_id}/sprints/{sprint_id}/issues/{user_story_id}"
-        response = requests.put(url, headers=self._headers())
+        response = requests.put(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def run_report(self, report_id: str):
@@ -466,7 +466,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/reports/{report_id}/execute"
-        response = requests.post(url, headers=self._headers())
+        response = requests.post(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def authenticate(self):
@@ -483,7 +483,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/admin/calendars?fields=id,name,holidays"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def get_issue_links(self, issue_id: str):
@@ -496,7 +496,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links?fields=id,direction,linkType(id,name,directed),issues(id,summary)"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_issue_link_types(self):
@@ -507,7 +507,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issueLinkTypes?fields=id,name,directed"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_issue_link_types_for_issue(self, issue_id: str):
@@ -520,7 +520,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues/{issue_id}/links/types?fields=id,name,directed"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def list_issue_link_types_for_project(self, project_id: str):
@@ -533,7 +533,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/admin/projects/{project_id}/issueLinkTypes?fields=id,name,directed"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def add_issue_link(self, source_issue_id: str, target_issue_id: str, link_type_id: str):
@@ -550,7 +550,7 @@ class YouTrackClient:
         :rtype: dict
         """
         url = f"{self.base_url}/api/issues/{source_issue_id}/links/{link_type_id}/{target_issue_id}"
-        response = requests.put(url, headers=self._headers())
+        response = requests.put(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def run_query(self, query: str, fields: str = "id,summary,description", limit: int = 20, skip: int = 0):
@@ -569,7 +569,7 @@ class YouTrackClient:
         :rtype: list
         """
         url = f"{self.base_url}/api/issues?fields={fields}&query={query}&$skip={skip}&$top={limit}"
-        response = requests.get(url, headers=self._headers())
+        response = requests.get(url, headers=self._headers(), verify=False)
         return self._handle_response(response)
 
     def run_command(self, issue_id: str, command: str, comment: str = None):
@@ -589,5 +589,5 @@ class YouTrackClient:
         data = {"query": command}
         if comment:
             data["comment"] = {"text": comment}
-        response = requests.post(url, json=data, headers=self._headers())
+        response = requests.post(url, json=data, headers=self._headers(), verify=False)
         return self._handle_response(response)
